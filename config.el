@@ -6,8 +6,8 @@
 
 ;; Some functionality uses this to identify you, e.g. GPG configuration, email
 ;; clients, file templates and snippets. It is optional.
-(setq user-full-name "John Doe"
-      user-mail-address "john@doe.com")
+(setq user-full-name "Nikita Tchayka"
+      user-mail-address "nick@booster.cloud")
 
 ;; Doom exposes five (optional) variables for controlling fonts in Doom:
 ;;
@@ -21,8 +21,8 @@
 ;; See 'C-h v doom-font' for documentation and more examples of what they
 ;; accept. For example:
 ;;
-;;(setq doom-font (font-spec :family "Fira Code" :size 12 :weight 'semi-light)
-;;      doom-variable-pitch-font (font-spec :family "Fira Sans" :size 13))
+(setq doom-font (font-spec :family "Fira Code" :size 16 :weight 'semi-light)
+      doom-variable-pitch-font (font-spec :family "ETBembo" :size 24))
 ;;
 ;; If you or Emacs can't find your font, use 'M-x describe-font' to look them
 ;; up, `M-x eval-region' to execute elisp code, and 'M-x doom/reload-font' to
@@ -32,15 +32,93 @@
 ;; There are two ways to load a theme. Both assume the theme is installed and
 ;; available. You can either set `doom-theme' or manually load a theme with the
 ;; `load-theme' function. This is the default:
-(setq doom-theme 'doom-one)
+(setq doom-theme 'doom-gruvbox-light)
 
 ;; This determines the style of line numbers in effect. If set to `nil', line
 ;; numbers are disabled. For relative line numbers, set this to `relative'.
-(setq display-line-numbers-type t)
+(setq display-line-numbers-type 'relative)
 
 ;; If you use `org' and don't want your org files in the default location below,
 ;; change `org-directory'. It must be set before org loads!
 (setq org-directory "~/org/")
+(setq org-roam-directory "~/org/notes")
+
+
+;; Modern org mode
+
+
+(use-package! org-modern
+  :hook (org-mode . org-modern-mode)
+  :config
+        (setq
+         ;; Edit settings
+         org-auto-align-tags nil
+         org-tags-column 0
+         org-catch-invisible-edits 'show-and-error
+         org-special-ctrl-a/e t
+         org-insert-heading-respect-content t
+
+         ;; Org styling, hide markup etc.
+         org-hide-emphasis-markers t
+         org-pretty-entities t
+         org-ellipsis "…"
+
+         ;; Agenda styling
+         org-agenda-block-separator ?─
+         org-agenda-time-grid
+         '((daily today require-timed)
+           (800 1000 1200 1400 1600 1800 2000)
+           " ┄┄┄┄┄ " "┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄")
+         org-agenda-current-time-string
+         "⭠ now ─────────────────────────────────────────────────"))
+
+(use-package! mixed-pitch
+  :hook
+  (org-mode . mixed-pitch-mode))
+
+(let* ((variable-tuple
+        (cond ((x-list-fonts "ETBembo")         '(:font "ETBembo"))
+              ((x-list-fonts "Source Sans Pro") '(:font "Source Sans Pro"))
+              ((x-list-fonts "Lucida Grande")   '(:font "Lucida Grande"))
+              ((x-list-fonts "Verdana")         '(:font "Verdana"))
+              ((x-family-fonts "Sans Serif")    '(:family "Sans Serif"))
+              (nil (warn "Cannot find a Sans Serif Font.  Install Source Sans Pro."))))
+       (base-font-color     (face-foreground 'default nil 'default))
+       (headline           `(:inherit default :weight bold :foreground ,base-font-color)))
+
+     (custom-theme-set-faces
+      'user
+      `(org-level-8 ((t (,@headline ,@variable-tuple))))
+      `(org-level-7 ((t (,@headline ,@variable-tuple))))
+      `(org-level-6 ((t (,@headline ,@variable-tuple))))
+      `(org-level-5 ((t (,@headline ,@variable-tuple))))
+      `(org-level-4 ((t (,@headline ,@variable-tuple :height 1.1))))
+      `(org-level-3 ((t (,@headline ,@variable-tuple :height 1.25))))
+      `(org-level-2 ((t (,@headline ,@variable-tuple :height 1.5))))
+      `(org-level-1 ((t (,@headline ,@variable-tuple :height 1.75))))
+      `(org-document-title ((t (,@headline ,@variable-tuple :height 2.0 :underline nil))))))
+
+(custom-theme-set-faces
+   'user
+   '(org-block ((t (:inherit fixed-pitch))))
+   '(org-code ((t (:inherit (shadow fixed-pitch)))))
+   '(org-document-info ((t (:foreground "dark orange"))))
+   '(org-document-info-keyword ((t (:inherit (shadow fixed-pitch)))))
+   '(org-indent ((t (:inherit (org-hide fixed-pitch)))))
+   '(org-link ((t (:foreground "royal blue" :underline t))))
+   '(org-meta-line ((t (:inherit (font-lock-comment-face fixed-pitch)))))
+   '(org-property-value ((t (:inherit fixed-pitch))) t)
+   '(org-special-keyword ((t (:inherit (font-lock-comment-face fixed-pitch)))))
+   '(org-table ((t (:inherit fixed-pitch :foreground "#83a598"))))
+   '(org-tag ((t (:inherit (shadow fixed-pitch) :weight bold :height 0.8))))
+   '(org-verbatim ((t (:inherit (shadow fixed-pitch))))))
+
+;; (custom-theme-set-faces
+;;  'user
+;;  '(variable-pitch ((t (:family "ETBembo" :height 180 :weight thin))))
+;;  '(fixed-pitch ((t ( :family "Fira Code" :height 160)))))
+
+(add-hook! 'org-mode-hook #'doom-disable-line-numbers-h)
 
 
 ;; Whenever you reconfigure a package, make sure to wrap your config in an

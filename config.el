@@ -86,7 +86,8 @@
               ((x-family-fonts "Sans Serif")    '(:family "Sans Serif"))
               (nil (warn "Cannot find a Sans Serif Font.  Install Source Sans Pro."))))
        (base-font-color     (face-foreground 'default nil 'default))
-       (headline           `(:inherit default :weight bold :foreground ,base-font-color)))
+       (headline           `(:inherit default :weight bold))) ;; :foreground ,base-font-color
+
 
      (custom-theme-set-faces
       'user

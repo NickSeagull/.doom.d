@@ -44,6 +44,7 @@
 ;; change `org-directory'. It must be set before org loads!
 (setq org-directory "~/org/")
 (setq org-roam-directory "~/org/notes")
+(setq +org-capture-todo-file "~/org/inbox.org")
 
 
 ;; Modern org mode
@@ -74,6 +75,51 @@
          org-agenda-current-time-string
          "⭠ now ─────────────────────────────────────────────────"))
 
+(use-package! org-super-agenda
+  :config
+  (org-super-agenda-mode)
+  (setq org-super-agenda-groups ;; Each group has an implicit boolean OR operator between its selectors.
+        '(
+          (:name "Today"  ; Optionally specify section name
+                 :time-grid t  ; Items that appear on the time grid
+                 :todo "TODAY")  ; Items that have this TODO keyword
+          (:name "Important"
+                 ;; Single arguments given alone
+                 :tag "bills"
+                 :priority "A")
+          ;; Set order of multiple groups at once
+          (:order-multi (2 (:name "Shopping in town"
+                                  ;; Boolean AND group matches items that match all subgroups
+                                  :and (:tag "shopping" :tag "@town"))
+                           (:name "Food-related"
+                                  ;; Multiple args given in list with implicit OR
+                                  :tag ("food" "dinner"))
+                           (:name "Personal"
+                                  :habit t
+                                  :tag "personal")
+                           (:name "Space-related (non-moon-or-planet-related)"
+                                  ;; Regexps match case-insensitively on the entire entry
+                                  :and (:regexp ("space" "NASA")
+                                                ;; Boolean NOT also has implicit OR between selectors
+                                                :not (:regexp "moon" :tag "planet")))))
+          ;; Groups supply their own section names when none are given
+          (:todo "WAITING" :order 8)  ; Set order of this section
+          (:todo ("SOMEDAY" "TO-READ" "CHECK" "TO-WATCH" "WATCHING")
+                 ;; Show this group at the end of the agenda (since it has the
+                 ;; highest number). If you specified this group last, items
+                 ;; with these todo keywords that e.g. have priority A would be
+                 ;; displayed in that group instead, because items are grouped
+                 ;; out in the order the groups are listed.
+                 :order 9)
+          (:priority<= "B"
+                       ;; Show this section after "Today" and "Important", because
+                       ;; their order is unspecified, defaulting to 0. Sections
+                       ;; are displayed lowest-number-first.
+                       :order 1))))
+         ;; After the last group, the agenda will display items that didn't
+         ;; match any of these groups, with the default order position of 99
+  
+
 (use-package! mixed-pitch
   :hook
   (org-mode . mixed-pitch-mode))
@@ -99,7 +145,7 @@
       `(org-level-3 ((t (,@headline ,@variable-tuple :height 1.25))))
       `(org-level-2 ((t (,@headline ,@variable-tuple :height 1.5))))
       `(org-level-1 ((t (,@headline ,@variable-tuple :height 1.75))))
-      `(org-document-title ((t (,@headline ,@variable-tuple :height 2.0 :underline nil))))))
+      `(org-document-title ((t (,@headline ,@variable-tuple :height 2.5 :underline nil))))))
 
 (custom-theme-set-faces
    'user
@@ -123,6 +169,12 @@
 
 (add-hook! 'org-mode-hook #'doom-disable-line-numbers-h)
 
+(after! org
+  (setq org-capture-templates
+               '(("i" "To Inbox" entry
+                  (file +org-capture-todo-file)
+                  "** TODO %?\n %i\n"
+                  :prepend t :kill-buffer t))))
 
 ;; Whenever you reconfigure a package, make sure to wrap your config in an
 ;; `after!' block, otherwise Doom's defaults may override your settings. E.g.
